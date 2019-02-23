@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core" 
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  template="/templates/systemModel.xhtml">
+	  
+	  <ui:define name="menu">
+	  	<ui:include src="/includes/mainMenu.xhtml"/>
+	  </ui:define>
+	  
+	  <ui:define name="content">
+	  	<f:event listener="#{dtBasicViewProduct.loadListing}" type="preRenderView"/>
+	  	
+	  	<h:form id="prodForm">
+	  		<p:dataTable id="prodTable" widgetVar="prodListingTable"
+	  					 value="#{dtBasicViewProduct.items}" var="item"
+	  					 emptyMessage="No registers found."
+	  					 paginator="true" rows="8"
+	  					 filteredValue="#{dtBasicViewProduct.filteredItems}">
+	  			<f:facet name="header">
+	  				<h:outputText value="Product - Listing"/>
+	  			</f:facet>
+	  			
+	  			<p:column headerText="ID" filterBy="#{item.id}" sortBy="#{item.id}">
+	  				<h:outputText value="#{item.id}"/>
+	  			</p:column>
+	  			
+	  			<p:column headerText="Description" filterBy="#{item.description}" sortBy="#{item.description}">
+	  				<h:outputFormat value="#{item.description}"/>
+	  			</p:column>
+	  			
+	  			<p:column headerText="Price" sortBy="#{item.price}">
+	  				<h:outputText value="#{item.price}">
+	  					<f:convertNumber type="currency" /> 
+	  					<!-- <f:convertNumber pattern="#0.00" /> 
+	  					<f:convertNumber groupingUsed="true" minFractionDigits="2" /> -->
+	  				</h:outputText>
+	  			</p:column>
+	  			
+	  			<p:column headerText="Amount" sortBy="#{item.amount}">
+	  				<h:outputText value="#{item.amount}"/>
+	  			</p:column>
+	  			
+	  			<p:column headerText="Manufacturer" filterBy="#{item.manufacturer.description}" sortBy="#{item.manufacturer.description}">
+	  				<h:outputText value="#{item.manufacturer.description}"/>
+	  			</p:column>
+	  			
+	  			<p:column headerText="Options">
+	  				<p:commandButton icon="ui-icon-trash" oncomplete="PF('deleteProdDlg').show();"
+	  								 update=":deleteProdForm:deleteProdPanel">
+	  					<f:setPropertyActionListener value="#{item}" target="#{dtBasicViewProduct.product}"/>
+	  				</p:commandButton>
+	  				
+	  				<p:commandButton icon="ui-icon-pencil" actionListener="#{dtBasicViewProduct.prepareUpdate}"
+	  								 oncomplete="PF('updateProdDlg').show();"
+	  								 update=":globalMsg :updateProdForm:updateProdPanel">
+	  					<f:setPropertyActionListener value="#{item}" target="#{dtBasicViewProduct.product}"/>
+	  				</p:commandButton>
+	  			</p:column>
+	  			
+	  			<f:facet name="footer">
+	  				<p:commandButton value="New" oncomplete="PF('newProdDlg').show();"
+	  								 actionListener="#{dtBasicViewProduct.prepareNew}"
+	  								 update=":newProdForm:newProdPanel :globalMsg"/>
+	  			</f:facet>
+	  		</p:dataTable>
+	  	</h:form>
+	  	
+	  	<p:dialog widgetVar="newProdDlg" resizable="false" header="Product - New" modal="true" appendTo="@(body)">
+	  		<h:form id="newProdForm">
+	  			<h:panelGrid id="newProdPanel" columns="2">
+			  		<p:outputLabel for="newDescField" value="Description:"/>
+			  		<p:inputText id="newDescField" value="#{dtBasicViewProduct.product.description}" maxlength="50" size="30"
+			  					 required="true" requiredMessage="Description field required."/>
+			  		
+			  		<p:outputLabel for="newPriceField" value="Price:"/>
+			  		<p:inputText id="newPriceField" value="#{dtBasicViewProduct.product.price}" size="10"
+			  					 required="true" requiredMessage="Price field required."
+			  					 converterMessage="Enter a valid value to the price field."
+			  					 validatorMessage="Enter a value between 0.00 and 9999.99">
+			  					 <f:convertNumber pattern="0.00"/>
+			  					 <f:validateDoubleRange minimum="0.00" maximum="9999.99"/>
+			  		</p:inputText>
+			  		
+			  		<p:outputLabel for="newAmountField" value="Amount:"/>
+			  		<p:inputText id="newAmountField" value="#{dtBasicViewProduct.product.amount}" size="10"
+			  					 required="true" requiredMessage="Amount field required."
+			  					 converterMessage="Enter a valid value to the amount field."
+			  					 validatorMessage="Enter a valid value between 0 and 99.">
+			  					 <f:validateLongRange minimum="0" maximum="99"/>
+			  		</p:inputText>		 
+			  		<p:outputLabel for="newManuField" value="Manufacturer: "/>
+			  		<p:selectOneMenu id="newManuField" value="#{dtBasicViewProduct.product.manufacturer.id}" filter="true"
+			  						 required="true" requiredMessage="Manufacturer field required.">
+			  			<f:selectItem itemValue="" itemLabel="Select a manufacturer"/>
+			  			<f:selectItems value="#{dtBasicViewProduct.comboManufacturer}" var="item"
+			  						   itemValue="#{item.id}" itemLabel="#{item.description}"/>
+			  		</p:selectOneMenu>
+			  	</h:panelGrid>
+			  	
+			  	<h:panelGrid columns="2">
+			  		<p:commandButton value="Save" actionListener="#{dtBasicViewProduct.newProduct}"
+			  						 update=":globalMsg :prodForm:prodTable"
+			  						 oncomplete="verify(xhr, status, args, 'newProdDlg', 'prodListingTable');"/>
+			  		<p:commandButton value="Cancel" oncomplete="PF('newProdDlg').hide();" process="@this">
+			  			<p:resetInput target="newProdPanel"/>
+			  		</p:commandButton>
+			  	</h:panelGrid>
+	  		</h:form>
+	  	</p:dialog>
+	  	
+	  	<p:dialog widgetVar="deleteProdDlg" resizable="false" header="Product - Delete" modal="true" appendTo="@(body)">
+	  		<h:form id="deleteProdForm">
+	  			<h:panelGrid id="deleteProdPanel" columns="2">
+	  				<p:outputLabel value="ID: "/>
+	  				<h:outputText value="#{dtBasicViewProduct.product.id}"/>
+	  				
+	  				<p:outputLabel value="Description: "/>
+	  				<h:outputText value="#{dtBasicViewProduct.product.description}"/>
+	  				
+	  				<p:outputLabel value="Price: "/>
+	  				<h:outputText value="#{dtBasicViewProduct.product.price}">
+	  					<f:convertNumber type="currency"/>
+	  				</h:outputText>
+	  				<p:outputLabel value="Amount: "/>
+	  				<h:outputText value="#{dtBasicViewProduct.product.amount}"/>
+	  				
+	  				<p:outputLabel value="Manufacturer: "/>
+	  				<h:outputText value="#{dtBasicViewProduct.product.manufacturer.description}"/>
+	  			</h:panelGrid>
+	  			
+	  			<p:panelGrid columns="2">
+	  				<p:commandButton value="Delete" actionListener="#{dtBasicViewProduct.delete}"
+	  				  				 update=":globalMsg :prodForm:prodTable"
+	  				  				 oncomplete="PF('deleteProdDlg').hide(); PF('prodListingTable').clearFilters();"/>
+	  				<p:commandButton value="Cancel" oncomplete="PF('deleteProdDlg').hide();" process="@this"/>
+	  			</p:panelGrid>
+	  		</h:form>
+	  	</p:dialog>
+	  	
+	  	<p:dialog widgetVar="updateProdDlg" resizable="false" header="Product - Update" modal="true" appendTo="@(body)">
+	  		<h:form id="updateProdForm">
+	  			<h:panelGrid id="updateProdPanel" columns="2">
+	  				<p:outputLabel value="ID: "/>
+	  				<h:outputText value="#{dtBasicViewProduct.product.id}"/>
+	  				
+	  				<p:outputLabel for="updateDescField" value="Description: "/>
+	  				<h:inputText id="updateDescField" value="#{dtBasicViewProduct.product.description}" maxlength="50" size="30"
+	  							 required="true" requiredMessage="Description field required."/>
+	  				
+	  				<p:outputLabel for="updatePriceField" value="Price: "/>
+	  				<h:inputText id="updatePriceField" value="#{dtBasicViewProduct.product.price}" size="10"
+	  							 required="true" requiredMessage="Price field required."
+	  							 converterMessage="Enter a valid value to the price field."
+	  							 validatorMessage="Enter a value between 0.00 and 9999.99 to the price field.">
+	  					<f:convertNumber pattern="0.00"/>
+	  					<f:validateDoubleRange minimum="0.00" maximum="9999.99"/>
+	  				</h:inputText>
+	  				
+	  				<p:outputLabel for="updateAmountField" value="Amount: "/>
+	  				<h:inputText id="updateAmountField" value="#{dtBasicViewProduct.product.amount}" size="10"
+	  							 required="true" requiredMessage="Amount field required."
+	  							 converterMessage="Enter a valid value to the amount field."
+	  							 validatorMessage="Enter a valid value between 0 and 99.">
+	  							 <f:validateLongRange minimum="0" maximum="99"/>
+	  				</h:inputText>
+	  				
+	  				<p:outputLabel for="updateManuField" value="Manufacturer: "/>
+	  				<p:selectOneMenu id="updateManuField" value="#{dtBasicViewProduct.product.manufacturer.id}" filter="true"
+	  								 required="true" requiredMessage="Manufacturer field required.">
+	  					<f:selectItem itemValue="" itemLabel="Select a manufacturer: "/>
+	  					
+	  					<f:selectItems value="#{dtBasicViewProduct.comboManufacturer}" var="item"
+	  								   itemValue="#{item.id}" itemLabel="#{item.description}"/>
+	  				</p:selectOneMenu>
+	  			</h:panelGrid>
+	  			
+	  			<h:panelGrid columns="2">
+	  				<p:commandButton value="Update" actionListener="#{dtBasicViewProduct.update}"
+	  								 update=":globalMsg :prodForm:prodTable"
+	  								 oncomplete="verify(xhr, status, args, 'updateProdDlg', 'prodListingTable');"/>
+	  				<p:commandButton value="Cancel" oncomplete="PF('updateProdDlg').hide();" process="@this">
+	  					<p:resetInput target="updateProdPanel"/>
+	  				</p:commandButton>
+	  			</h:panelGrid>
+	  		</h:form>
+	  	</p:dialog>
+	  </ui:define>
+</ui:composition>

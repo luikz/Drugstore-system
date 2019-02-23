@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  template="/templates/systemModel.xhtml">
+	  
+	  <ui:define name="menu">
+	  	<ui:include src="/includes/mainMenu.xhtml"/> 
+	  </ui:define>
+	  
+	  <ui:define name="content">
+	  	<h:form id="listingForm">
+	  		<p:dataTable id="table" widgetVar="manufacturerTable" 
+	  			emptyMessage="No registers found."  
+	  		    value="#{dtBasicView.items}" var="item" 
+	  		    filteredValue="#{dtBasicView.filteredItems}" 
+	  		    paginator="true" rows="8">
+	  	
+	  			<f:facet name="header">
+	  				Manufacturer - Listing
+	  			</f:facet>
+	  	
+	  			<p:column headerText="ID" sortBy="#{item.id}" 
+	  				filterBy="#{item.id}">
+	  		 		<h:outputText value="#{item.id}"/> 
+		  		</p:column>
+		  		
+		  		<p:column headerText="Description" sortBy="#{item.description}"
+		  		 	filterBy="#{item.description}">
+	  				<h:outputText value="#{item.description}"/>
+	  			</p:column>
+	  			
+	  			<p:column headerText="Options">
+	  				<p:commandButton icon="ui-icon-trash" 
+	  								 oncomplete="PF('deleteDlg').show();"
+	  								 update=":deleteForm:deletePanel">
+	  					<f:setPropertyActionListener 
+	  					 target="#{dtBasicView.manufacturer}" value="#{item}"/>
+	  				</p:commandButton>
+	  				
+	  				<p:commandButton icon="ui-icon-pencil"
+	  								 oncomplete="PF('updateDlg').show();"
+	  								 update=":updateForm:updatePanel">
+	  					<f:setPropertyActionListener 
+	  					 target="#{dtBasicView.manufacturer}" value="#{item}"/>
+	  				</p:commandButton>
+	  			</p:column>
+	  			
+	  			<f:facet name="footer">
+	  				<p:commandButton value="New" actionListener="#{dtBasicView.prepareNew}"  
+				  					 oncomplete="PF('creationDlg').show();"
+				  					 update=":creationForm:creationPanel"/>	
+	  			</f:facet>
+	  		</p:dataTable>
+	  	</h:form>
+	  	
+	  	<p:dialog widgetVar="creationDlg" resizable="false" 
+	  			  modal="true" appendTo="@(body)" header="New - Manufacturer">
+	  		<h:form id="creationForm">
+	  			<h:panelGrid  id="creationPanel" columns="2">
+	  				<p:outputLabel for="newDescField" value="Description: "/>
+	  				<p:inputText id="newDescField" size="30" maxlength="50" 
+	  							 value="#{dtBasicView.manufacturer.description}"
+	  							 required="true" requiredMessage="Description field required."/>
+	  			</h:panelGrid>
+	  			<h:panelGrid columns="2">
+	  				<p:commandButton value="Save" actionListener="#{dtBasicView.newManufacturer}"
+	  								 oncomplete="verify(xhr, status, args, 'creationDlg', 'manufacturerTable');"
+	  								 update=":listingForm:table :globalMsg"/>
+	  				<p:commandButton value="Cancel" onclick="PF('creationDlg').hide();" process="@this">
+	  					<p:resetInput target="creationPanel"/>
+	  				</p:commandButton>
+	  			</h:panelGrid>
+	  		</h:form>
+	  	</p:dialog>
+	  	
+	  	<p:dialog widgetVar="deleteDlg" resizable="false" 
+	  			  modal="true" appendTo="@(body)" header="Delete - Manufacturer">
+	  		<h:form id="deleteForm">
+	  			<h:panelGrid id="deletePanel" columns="2">
+	  				<p:outputLabel value="ID: "/>
+	  				<h:outputText value="#{dtBasicView.manufacturer.id}"/>
+	  				
+	  				<p:outputLabel value="Description: "/>
+	  				<h:outputText value="#{dtBasicView.manufacturer.description}"/>
+	  			</h:panelGrid>
+	  			
+	  			<h:panelGrid columns="2">
+	  				<p:commandButton value="Delete" actionListener="#{dtBasicView.delete}"
+	  								 oncomplete="PF('deleteDlg').hide(); PF('manufacturerTable').clearFilters();" 
+	  								 update=":listingForm:table :globalMsg"/>
+	  				<p:commandButton value="Cancel" onclick="PF('deleteDlg').hide();" process="@this"/> 
+	  			</h:panelGrid>
+	  		</h:form>
+	  	</p:dialog>
+	  	
+	  	<p:dialog widgetVar="updateDlg" resizable="false" modal="true"
+	  			  appendTo="@(body)" header="Update - Manufacturer">
+	  		<h:form id="updateForm">
+	  			<h:panelGrid id="updatePanel" columns="2">
+	  				<p:outputLabel value="ID:"/>
+	  				<h:outputText value="#{dtBasicView.manufacturer.id}"/>
+	  				
+	  				<p:outputLabel for="updateDescField" value="Description: "/>
+	  				<h:inputText id="updateDescField" value="#{dtBasicView.manufacturer.description}"
+	  							 required="true" requiredMessage="Description field required."/>
+	  			</h:panelGrid>
+	  			
+	  			<h:panelGrid columns="2">
+	  				<p:commandButton value="Update" actionListener="#{dtBasicView.update}"
+	  								 oncomplete="verify(xhr, status, args, 'updateDlg', 'manufacturerTable');"
+	  								 update=":listingForm:table :globalMsg"/>
+	  				<p:commandButton value="Cancel" onclick="PF('updateDlg').hide();" process="@this">
+	  					<p:resetInput target="updatePanel"/>
+	  				</p:commandButton>
+	  			</h:panelGrid>
+	  		</h:form>
+	  	
+	  	</p:dialog>
+	  </ui:define>
+</ui:composition>
