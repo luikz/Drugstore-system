@@ -8,14 +8,14 @@ import java.util.ArrayList;
 
 import com.drugstore.domain.Manufacturer;
 import com.drugstore.domain.Product;
-import com.drugstore.factory.FactoryConnection;
+import com.drugstore.factory.ConnectionFactory;
 
 public class DAOProduct {
 	public void save(Product p) throws SQLException {
 		String sql = "INSERT INTO product (description, price, amount, manufacturer_id)"
 				+ "VALUES (?, ?, ?, ?)";
 		
-		Connection connection = FactoryConnection.connect();
+		Connection connection = ConnectionFactory.connect();
 		
 		PreparedStatement ps = connection.prepareStatement(sql);
 		ps.setString(1, p.getDescription());
@@ -24,6 +24,9 @@ public class DAOProduct {
 		ps.setLong(4, p.getManufacturer().getId());
 		
 		ps.executeUpdate();
+		
+		connection.close();
+		ps.close();
 	}
 	
 	public ArrayList<Product> list() throws SQLException {
@@ -31,7 +34,7 @@ public class DAOProduct {
 				"FROM product p " + 
 				"INNER JOIN manufacturer m ON m.id = p.manufacturer_id ";
 		
-		Connection connection = FactoryConnection.connect();
+		Connection connection = ConnectionFactory.connect();
 		
 		PreparedStatement ps = connection.prepareStatement(sql);
 				
@@ -53,25 +56,32 @@ public class DAOProduct {
 			
 			productList.add(p);
 		}
+		
+		connection.close();
+		ps.close();
+		result.close();
 		return productList;
 	}
 	
 	public void delete(Product p) throws SQLException {
 		String sql = "DELETE FROM product WHERE id=?";
 		
-		Connection connection = FactoryConnection.connect();
+		Connection connection = ConnectionFactory.connect();
 		
 		PreparedStatement ps = connection.prepareStatement(sql);
 		ps.setLong(1, p.getId());
 		
 		ps.executeUpdate();
+		
+		connection.close();
+		ps.close();
 	}
 	
 	public void update(Product p) throws SQLException {
 		String sql = "UPDATE product SET description = ?, price = ?, amount = ?, manufacturer_id = ? "
 				+ "Where id = ? ";
 		
-		Connection connection = FactoryConnection.connect();
+		Connection connection = ConnectionFactory.connect();
 		
 		PreparedStatement ps = connection.prepareStatement(sql);
 		ps.setString(1, p.getDescription());
@@ -81,5 +91,8 @@ public class DAOProduct {
 		ps.setLong(5, p.getId());
 		
 		ps.executeUpdate();
+		
+		connection.close();
+		ps.close();
 	}
 }
