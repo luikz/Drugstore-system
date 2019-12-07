@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class FactoryConnection {
+public class ConnectionFactory {
 	private static final String URL = "jdbc:mysql://localhost:3306/drugstore?useTimezone=true&serverTimezone=UTC";
 	private static final String USER = "root";
 	private static final String PASSWORD = "snippetcode";
@@ -18,7 +18,7 @@ public class FactoryConnection {
 	
 	public static void main(String[] args) {
 		try {
-		Connection connection = FactoryConnection.connect();
+		Connection connection = ConnectionFactory.connect();
 		System.out.println("Connection successfully completed!");
 		}catch(SQLException e) {
 			System.out.println("Connection was not successfully completed!");
